@@ -1,0 +1,6 @@
+dist
+node_modules
+.env
+.env.test
+coverage
+files/ssl
