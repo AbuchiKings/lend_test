@@ -6,7 +6,10 @@ import preventParameterPollution from 'hpp'
 
 import env from './config'
 import v1 from './routes/v1'
+import './cache'
+import db from './db/index'
 
+console.log(db.name)
 const app: Application = express();
 
 const whitelist = env.WHITELIST.length ? env.WHITELIST.split(',') : [];
