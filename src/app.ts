@@ -4,10 +4,11 @@ import express, { Application} from 'express';
 import helmet from 'helmet';
 import preventParameterPollution from 'hpp'
 
+import db from './db/index'
 import env from './config'
+import errorHandler from './middlewares/errorHandler'
 import v1 from './routes/v1'
 import './cache'
-import db from './db/index'
 
 console.log(db.name)
 const app: Application = express();
@@ -29,6 +30,6 @@ app.use(preventParameterPollution());
 app.use(compression());
 
 app.use(v1);
-// app.use(globalErrorHandler);
+app.use(errorHandler);
 
 export default app;
