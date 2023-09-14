@@ -10,8 +10,8 @@ export const validateEmail = (email: string) => [
         .normalizeEmail({ all_lowercase: true })
         .isEmail()
         .withMessage('Invalid email address.')
-        .isLength({ max: 60 })
-        .withMessage('Email cannot have more than 60 characters.'),
+        .isLength({ max: 100 })
+        .withMessage('Email cannot have more than 100 characters.'),
 ];
 
 export const validateIdParam = (...ids: string[]) => {
@@ -61,6 +61,23 @@ export const validateLogin = [
         .withMessage('Invalid email or password.'),
     validateCreateUser[2],
 ];
+
+export const validateFundWallet = [
+    body('amount')
+        .exists({ checkFalsy: true, checkNull: true })
+        .withMessage('Amount is required')
+        .matches(/^[0-9.]+$/)
+        .withMessage('Non numeric values or numeric values with symbols are not allowed')
+        .isDecimal({ force_decimal: false, decimal_digits: '0,2', locale: 'en-US' })
+        .withMessage('Decimal digits count cannot exceed 2')
+        .custom(value => 5.00 <= value && value <= 1000000000.00)
+        .withMessage('Amount must be between NGN5.00 and 1 billion')
+]
+
+export const validateTransfer = [
+    validateFundWallet[0],
+    validateEmail('recipientEmail')[0]
+]
 
 
 export const validationHandler = (req: Request, res: Response, next: NextFunction) => {

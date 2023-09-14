@@ -16,14 +16,13 @@ export async function up(knex: Knex): Promise<void> {
         table.foreign('userId').references('id').inTable('user').onDelete('cascade');
         table.decimal('balance', 14, 4).defaultTo(0);
         table.timestamp('createdAt', {}).notNullable().defaultTo(db.fn.now());
-
     });
 }
 
 
 export async function down(knex: Knex): Promise<void> {
-    await knex.schema.dropTable('wallet');
-    await knex.schema.dropTable('user');
+    return knex.schema.dropTable('wallet')
+        .dropTable('user');
 
 }
 
