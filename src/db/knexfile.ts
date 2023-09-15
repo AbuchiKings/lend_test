@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config({ path: '../../.env' })
 
 import type { Knex } from "knex";
-
+console.log('This is the db name:', process.env.DB_NAME)
 const config: { [key: string]: Knex.Config } = {
   development: {
     client: 'mysql2',
@@ -20,7 +20,7 @@ const config: { [key: string]: Knex.Config } = {
     migrations: {
       tableName: "knex_migrations"
     },
-    debug: true
+    //debug: true
   },
   production: {
     client: 'mysql2',

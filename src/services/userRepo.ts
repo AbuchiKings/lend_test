@@ -1,7 +1,7 @@
 import db from "../db/index";
 import { UserInterface } from '../utils/interfaces/interface'
 
-type newUser = {
+export type newUser = {
     firstname: string,
     email: string,
     password: string,

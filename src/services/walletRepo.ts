@@ -10,13 +10,13 @@ export async function createWallet(wallet: newWallet): Promise<number[] | undefi
     return data;
 }
 
-export async function findWalletFieldsById(id: number, fields: string | string[] = '*'): Promise<WalletInterface | undefined> {
-    const data = await db<WalletInterface>('wallet').select(fields).where('id', id).first()
+export async function findWalletFieldsByUserId(userId: number, fields: string | string[] = '*'): Promise<WalletInterface | undefined> {
+    const data = await db<WalletInterface>('wallet').select(fields).where('userId', userId).first()
     return data;
 }
 
-export async function deleteWallet(id: number) {
-    const data = await db('wallet').where('id', id).del()
+export async function deleteWallet(userId: number) {
+    const data = await db('wallet').where('userId', userId).del()
     return data;
 }
 

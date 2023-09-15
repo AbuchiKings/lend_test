@@ -11,7 +11,7 @@ import * as User from "../services/userRepo"
 import { createToken } from "../middlewares/auth";
 import { createWallet } from "../services/walletRepo";
 import { setJson } from "../cache/query";
-import { UserInterface } from "utils/interfaces/interface";
+import { ProtectedRequest, UserInterface } from "utils/interfaces/interface";
 
 class UserController {
     public static login = async (req: Request, res: Response, next: NextFunction): Promise<Response | void> => {
@@ -33,7 +33,7 @@ class UserController {
                 if (!login) throw new AuthFailureError('Incorrect email or password.');
 
                 const match = await bcrypt.compare(password, login.password!);
-                if (!match) throw new AuthFailureError('Authentication failure');
+                if (!match) throw new AuthFailureError('Incorrect email or password.');
             }
             const accessTokenKey = crypto.randomBytes(64).toString('hex');
 
@@ -49,10 +49,13 @@ class UserController {
             return next(error)
         }
     }
+
+    public static test = async (req: ProtectedRequest, res: Response, next: NextFunction) => {
+        return new SuccessResponse('Test success.', null, 1).send(res);
+    }
 }
 
-function getUserData(user?: UserInterface) {
-    if (!user) throw new InternalError()
+function getUserData(user: UserInterface) {
     const data = _.omit(user, ['password']);
     return data;
 }

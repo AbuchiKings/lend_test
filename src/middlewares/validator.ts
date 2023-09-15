@@ -25,10 +25,10 @@ export const validateIdParam = (...ids: string[]) => {
 
 export const validateCreateUser = [
     body('firstname')
-        .exists().withMessage('Firstname is required.')
+        .exists().withMessage('Firstname is required')
         .trim()
         .isLength({ min: 2, max: 100 })
-        .withMessage('Name must have a minimun of two(2) characters and a maximum of 100 characters.')
+        .withMessage('Name must have a minimun of two(2) characters and a maximum of 100 characters')
         .escape()
         .bail()
         .matches(/^[A-Za-z]+$/)
@@ -36,7 +36,7 @@ export const validateCreateUser = [
         .toLowerCase(),
     body('password')
         .exists({ checkFalsy: true, checkNull: true })
-        .withMessage('Please enter your password. Epty spaces at start or end of passwords will be trimmed')
+        .withMessage('Please enter your password. Empty spaces at start or end of passwords will be trimmed')
         .trim()
         .isLength({ min: 5, max: 100 })
         .withMessage('Password must have between 5 and 100 characters.')
@@ -47,7 +47,7 @@ export const validateCreateUser = [
         .trim()
         .normalizeEmail({ all_lowercase: true })
         .isEmail()
-        .withMessage('Invalid email address.')
+        .withMessage('Invalid email address')
         .isLength({ max: 100 })
         .withMessage('Email cannot have more than 60 characters.')
         .escape(),

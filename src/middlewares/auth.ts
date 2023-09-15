@@ -1,13 +1,16 @@
-import { promisify } from 'util';
 
-import { sign, verify } from 'jsonwebtoken';
 import { Response, NextFunction } from 'express';
 
-import { InternalError, AuthFailureError, BadTokenError, TokenExpiredError } from '../utils/requestUtils/ApiError';
+import { AuthFailureError, BadTokenError, InternalError } from '../utils/requestUtils/ApiError';
 import { ProtectedRequest, UserInterface } from '../utils/interfaces/interface'
 import { getJson } from '../cache/query'
 
 const SECRET = process.env.JWT_KEY;
+
+import { promisify } from 'util';
+
+import { sign, verify } from 'jsonwebtoken';
+
 
 export const signToken = async (payload: JwtPayload): Promise<string> => {
     // @ts-ignore
@@ -49,8 +52,6 @@ export const createToken = async (user: UserInterface, accessTokenKey: string): 
             user.email || ''
         ),
     );
-
-    if (!accessToken) throw new InternalError();
     return accessToken
 };
 
@@ -70,7 +71,7 @@ export const verifyToken = async (req: ProtectedRequest, res: Response, next: Ne
         if (!payload.sub || !payload.key) throw new BadTokenError()
 
         const user = await getJson<UserInterface>(`${payload.sub}:${payload.key}`)
-        if (!user) throw new AuthFailureError('User not registered');
+        if (!user) throw new AuthFailureError('Invalid Authorization.');
         req.user = user;
         return next();
     } catch (e: any) {
