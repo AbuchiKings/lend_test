@@ -4,9 +4,8 @@ import db from '../db'
 import { findUserByEmail } from "../services/userRepo"
 
 import { ProtectedRequest } from "../utils/interfaces/interface";
-import { BadRequestError, InternalError, NotFoundError } from "../utils/requestUtils/ApiError";
+import { BadRequestError, ConflictError, InternalError, NotFoundError } from "../utils/requestUtils/ApiError";
 import { SuccessResponse } from "../utils/requestUtils/ApiResponse";
-import { findWalletFieldsByUserId } from "../services/walletRepo";
 
 class TransactionController {
     public static fund = async (req: ProtectedRequest, res: Response, next: NextFunction) => {
@@ -30,28 +29,30 @@ class TransactionController {
             let { amount, recipientEmail } = req.body;
             let id = req.user!.id
             amount = Number(amount);
+            if (req.user?.email === recipientEmail) throw new ConflictError('Cannot transfer funds to self.')
 
             const recipient = await findUserByEmail(recipientEmail, 'id');
             if (!recipient) throw new NotFoundError('Recipient not found.')
 
             trx = await db.transaction(); // Start a transaction
-            const sourceWallet = await trx('wallet').where('id', id).forUpdate().select('balance').first();
+            const sourceWallet = await trx('wallet').where('userId', id).forUpdate().select('balance').first();
+            if (!sourceWallet) throw new NotFoundError('Source wallet not found');
+
             const walletBalance = Number(sourceWallet.balance);
 
-            if (!sourceWallet) throw new NotFoundError('Source wallet not found');
             if (walletBalance < amount) throw new BadRequestError('Insufficient funds');
 
-            const destinationWallet = await trx('wallet').where('id', recipient.id).forUpdate()
+            const destinationWallet = await trx('wallet').where('userId', recipient.id).forUpdate()
                 .select('balance').first();
 
             if (!destinationWallet) throw new NotFoundError('Destination wallet not found');
 
             // Update the source wallet's balance
-            await trx('wallet').where('id', id).decrement('balance', amount)
+            await trx('wallet').where('userId', id).decrement('balance', amount)
                 .update('updatedAt', new Date());
 
             // Update the destination wallet's balance
-            await trx('wallet').where('id', recipient.id).increment('balance', amount)
+            await trx('wallet').where('userId', recipient.id).increment('balance', amount)
                 .update('updatedAt', new Date());
 
             await trx.commit();
@@ -68,32 +69,28 @@ class TransactionController {
     }
 
     public static withdraw = async (req: ProtectedRequest, res: Response, next: NextFunction) => {
-        let { amount } = req.body;
-        amount = Number(amount);
-        let id = req.user!.id
-        let trx;
         try {
-            trx = await db.transaction();
-            const wallet = await trx('wallet').where('userId', id).forUpdate().select('balance').first();
-            const walletBalance = Number(wallet.balance);
+            let { amount } = req.body;
+            amount = Number(amount);
+            let id = req.user!.id
+            await db.transaction(async trx => {
+                const wallet = await trx('wallet').where('userId', id).forUpdate().select('balance').first();
 
-            if (!wallet) throw new NotFoundError('Wallet not found.');
-            if (walletBalance < amount) throw new BadRequestError('Insufficient funds');
+                if (!wallet) throw new NotFoundError('Wallet not found.');
+                const walletBalance = Number(wallet.balance);
+                if (walletBalance < amount) throw new BadRequestError('Insufficient funds');
 
-            let data = await trx('wallet').where('id', id).decrement({ balance: amount })
-                .update('updatedAt', new Date());
-            if (!data) throw new InternalError();
+                let data = await trx('wallet').where('id', id).decrement({ balance: amount })
+                    .update('updatedAt', new Date());
+                if (!data) throw new InternalError();
 
-            //queue transfer to bank
+                //queue transfer to bank
 
-            await trx.commit();
-
-            let result = { balance: (walletBalance - amount).toFixed(2) }
-            return new SuccessResponse(`Wallet was successfully funded`, result, 1).send(res);
+                await trx.commit();
+                let result = { balance: (walletBalance - amount).toFixed(2) }
+                return new SuccessResponse(`Wallet was successfully funded`, result, 1).send(res);
+            });
         } catch (error) {
-            if (trx) {
-                await trx.rollback();
-            }
             return next(error)
         }
 

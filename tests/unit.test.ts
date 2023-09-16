@@ -30,7 +30,6 @@ import {
     getJsonSpy,
     jwtValidateSpy
 } from "./mock"
-import { createUser, deleteUser } from "../src/services/userRepo";
 import db from '../src/db/index';
 
 
@@ -187,10 +186,6 @@ describe('Routes', () => {
             jest.clearAllMocks();
         });
 
-        afterAll(async () => {
-            await clearData()
-        })
-
         const endpoint = '/api/v1/auth/login'
         it('Should throw error if empty body is sent', async () => {
             const response = await addHeaders(request.post(endpoint));
@@ -288,7 +283,6 @@ describe('Routes', () => {
                 }),
             );
 
-            console.log(response.body)
             expect(response.status).toBe(401);
             expect(response.body.message).toMatch(/Incorrect/);
             expect(response.body.message).toMatch(/email/);
@@ -301,16 +295,16 @@ describe('Routes', () => {
 
     describe('Auth verifyToken middleware', () => {
         const endpoint = '/api/v1/auth/test';
-    
+
         beforeEach(() => {
             jest.clearAllMocks();
         });
-    
+
         it('Should response with 401 if Authorization header is not passed', async () => {
             const response = await addHeaders(request.get(endpoint));
             expect(response.status).toBe(401);
         });
-    
+
         it('Should response with 401 if a wrong token is sent', async () => {
             const response = await addHeaders(request.get(endpoint)).set('Authorization', 'Bearer wrongToken');
             expect(response.status).toBe(401);
@@ -319,22 +313,28 @@ describe('Routes', () => {
 
         it('Should response with 200 if a correct token is sent', async () => {
             const response = await addAuthHeaders(request.get(endpoint))
-            .set('Authorization', `Bearer ${token}`);
+                .set('Authorization', `Bearer ${token}`);
             expect(response.status).toBe(200);
             expect(jwtValidateSpy).toBeCalledTimes(1);
             expect(getJsonSpy).toBeCalledTimes(1);
         });
+
+        it('Should throw error if bad authorization header is sent', async () => {
+            const response = await addHeaders(request.get(endpoint))
+                .set('Authorization', `Bearer ${token}x`);
+            expect(response.status).toBe(401);
+            expect(response.body.message).toMatch(/Bad Token/);
+            expect(getJsonSpy).not.toBeCalled();
+            expect(jwtValidateSpy).toBeCalledTimes(1);
+
+        });
     });
 
-    describe('Fund User', () => {
+    describe('Fund Wallet', () => {
 
         beforeEach(() => {
             jest.clearAllMocks();
         });
-
-        afterAll(async () => {
-            await clearData()
-        })
 
         const endpoint = '/api/v1/transaction/fund'
         it('Should throw error if no authorization header is sent', async () => {
@@ -343,17 +343,6 @@ describe('Routes', () => {
             });
             expect(response.status).toBe(401);
             expect(response.body.message).toMatch(/Invalid Authorization/);
-            expect(getJsonSpy).not.toBeCalled();
-        });
-
-        it('Should throw error if bad authorization header is sent', async () => {
-            const response = await addHeaders(request.post(endpoint))
-                .set('Authorization', `Bearer ${token}x`)
-                .send({
-                    amount: 10
-                });
-            expect(response.status).toBe(401);
-            expect(response.body.message).toMatch(/Bad Token/);
             expect(getJsonSpy).not.toBeCalled();
         });
 
@@ -369,67 +358,156 @@ describe('Routes', () => {
             expect(jwtValidateSpy).toBeCalled();
         });
 
-        //     it('Should send error when password is not valid format', async () => {
-        //         const response = await addHeaders(
-        //             request.post(endpoint).send({
-        //                 email: USER_EMAIL,
-        //                 firstname: firstname,
-        //                 password: '123',
-        //             }),
-        //         );
-        //         expect(response.status).toBe(422);
-        //         expect(response.body.message).toMatch(/Invalid/i);
-        //         expect(response.body.message).toMatch(/password/);
-        //         expect(mockUserFindByEmail).not.toBeCalled();
-        //         expect(bcryptHashSpy).not.toBeCalled();
-        //         expect(mockCreateUser).not.toBeCalled();
-        //         expect(createTokensSpy).not.toBeCalled();
-        //     });
+        it('Should send success when input is correct', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({ amount: 10 });
+            expect(response.status).toBe(200);
+        });
+    });
 
+    describe('Wallet Withdrawal', () => {
 
-        //     it('Should send success response for correct data', async () => {
-        //         const response = await addHeaders(
-        //             request.post(endpoint).send({
-        //                 email: USER_EMAIL,
-        //                 password: USER_PASSWORD,
-        //             }),
-        //         );
-        //         token = response.body?.data?.id
-        //         expect(response.status).toBe(200);
-        //         expect(response.body.message).toMatch(/successfully/i);
-        //         expect(response.body.data).toBeDefined();
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
 
-        //         expect(response.body.data).toHaveProperty('id');
-        //         expect(response.body.data).toHaveProperty('firstname');
-        //         expect(response.body.data).toHaveProperty('email');
-        //         expect(response.body.data).toHaveProperty('token');
+        const endpoint = '/api/v1/transaction/withdraw'
+        it('Should throw error if no authorization header is sent', async () => {
+            const response = await addHeaders(request.post(endpoint)).send({
+                amount: 10
+            });
+            expect(response.status).toBe(401);
+            expect(response.body.message).toMatch(/Invalid Authorization/);
+            expect(getJsonSpy).not.toBeCalled();
+        });
 
-        //         expect(response.body.data.token).toBeDefined();
+        it('Should send error when empty body is sent', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({});
+            expect(response.status).toBe(422);
+            expect(response.body.message).toMatch(/amount/i);
+            expect(response.body.message).toMatch(/required/);
+            expect(getJsonSpy).toBeCalled();
+            expect(jwtValidateSpy).toBeCalled();
+        });
 
-        //         expect(findUserByEmailSpy).toBeCalledTimes(1);
-        //         expect(bcryptHashSpy).not.toBeCalled();
-        //         expect(createUserSpy).not.toBeCalled();
-        //         expect(createTokensSpy).toBeCalledTimes(1);
-        //         expect(bcryptCompareSpy).toBeCalledTimes(1);
-        //         expect(findUserByEmailSpy).toBeCalledTimes(1);
-        //     });
+        it('Should send insufficient funds error when balance is low', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({ amount: 1000 });
+            expect(response.status).toBe(400);
+            expect(response.body.message).toMatch(/insufficient funds/i);
+            expect(response.body).toHaveProperty('status');
+            expect(response.body.status).toMatch(/error/);
 
-        //     it('Should send not found error for nonexistent user', async () => {
-        //         const response = await addHeaders(
-        //             request.post(endpoint).send({
-        //                 email: 'USER_EMAIL@unknownemail.com',
-        //                 password: USER_PASSWORD,
-        //             }),
-        //         );
+        });
 
-        //         console.log(response.body)
-        //         expect(response.status).toBe(401);
-        //         expect(response.body.message).toMatch(/Incorrect/);
-        //         expect(response.body.message).toMatch(/email/);
-        //         expect(findUserByEmailSpy).toBeCalled();
-        //         expect(bcryptHashSpy).not.toBeCalled();
-        //         expect(createUserSpy).not.toBeCalled();
-        //         expect(createTokensSpy).not.toBeCalled();
-        //     });
+        it('Should send success when input is correct', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({ amount: 10 });
+            expect(response.status).toBe(200);
+        });
+    });
+
+    describe('Wallet Transfer', () => {
+
+        beforeEach(() => {
+            jest.clearAllMocks();
+        });
+
+        const endpoint = '/api/v1/transaction/transfer'
+        it('Should throw error if no authorization header is sent', async () => {
+            const response = await addHeaders(request.post(endpoint)).send({
+                amount: 10
+            });
+            expect(response.status).toBe(401);
+            expect(response.body.message).toMatch(/Invalid Authorization/);
+            expect(getJsonSpy).not.toBeCalled();
+        });
+
+        it('Should send error when empty body is sent', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({});
+            expect(response.status).toBe(422);
+            expect(response.body.message).toMatch(/amount/i);
+            expect(response.body.message).toMatch(/required/);
+            expect(getJsonSpy).toBeCalled();
+            expect(jwtValidateSpy).toBeCalled();
+        });
+
+        it('Should send error when email is not sent', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({ amount: 10 });
+            expect(response.status).toBe(422);
+            expect(response.body.message).toMatch(/recipientEmail/i);
+            expect(response.body.message).toMatch(/required/);
+        });
+
+        it('Should send error when invalid email address is sent', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({ amount: 10, recipientEmail: 'unknownemailgmail.com' });
+            expect(response.status).toBe(422);
+            expect(response.body.message).toMatch(/invalid/i);
+            expect(response.body.message).toMatch(/email/);
+        });
+
+        it('Should fail when user attempts to transfer to self', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({amount: 10, recipientEmail: USER_EMAIL});
+            expect(response.status).toBe(409);
+            expect(response.body.message).toMatch(/transfer/i);
+            expect(response.body.message).toMatch(/self/);
+            expect(response.body.status).toMatch(/error/);
+        });
+
+        it('Should send not found error when transfer is made to nonexistent email', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({ amount: 1000, recipientEmail: 'unknownemail@gmail.com' });
+            expect(response.status).toBe(404);
+            expect(response.body.message).toMatch(/Recipient not found/i);
+            expect(response.body).toHaveProperty('status');
+            expect(response.body.status).toMatch(/error/);
+        });
+
+        it('Should send insufficient funds error when balance is low', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({ amount: 1000, recipientEmail: 'shegz@myemail.com' });
+            expect(response.status).toBe(400);
+            expect(response.body.message).toMatch(/insufficient funds/i);
+            expect(response.body).toHaveProperty('status');
+            expect(response.body.status).toMatch(/error/);
+
+        });
+
+        it('Should send success when input is correct', async () => {
+            const response = await addHeaders(
+                request.post(endpoint))
+                .set('Authorization', `Bearer ${token}`)
+                .send({ amount: 10, recipientEmail: 'shegz@myemail.com' });
+            expect(response.status).toBe(200);
+            expect(response.body).toHaveProperty('data');
+            expect(response.body.data).toHaveProperty('balance');
+            expect(response.body.data.balance).toEqual('0.00');
+
+        });
     });
 });
