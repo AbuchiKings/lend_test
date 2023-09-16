@@ -17,7 +17,7 @@
 * [MySQL](https://www.mysql.com) - An Object relational database.
 * [Express.js](https://expressjs.com) - A Node.js framework.
 * [Typescript](https://www.typescriptlang.org/) - Superset of Javascript.
-* [Docker](hhttps://www.docker.com/) - API testing environment.
+* [Docker](hhttps://www.docker.com/) - Containerization.
 * [Docker-Compose](https://docs.docker.com/compose/) - Container orchestration tool.
 * [Redis](https://redis.io/) - Cache database.
 * [Knexjs](https://knexjs.org/) - A NodeJS ORM for RDBMS.
