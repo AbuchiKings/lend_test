@@ -31,7 +31,6 @@
 * Users can sign up for accounts.
 * Users can log into their accounts.
 * Users can have a wallet.
-* Users can create wallet.
 * Users can fund wallet.
 * Users can transfer from wallet to other users.
 * Users can withdraw from wallet.
