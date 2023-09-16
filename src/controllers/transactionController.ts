@@ -13,11 +13,20 @@ class TransactionController {
             const { amount } = req.body;
             let id = req.user!.id
 
-            const updated = await db('wallet').where('userId', id).increment('balance', amount)
-                .update('updatedAt', new Date());
-            if (!updated) throw new NotFoundError('Wallet not found.');
+            await db.transaction(async trx => {
+                const wallet = await trx('wallet').where('userId', id).forUpdate().select('balance').first();
 
-            return new SuccessResponse(`Wallet was successfully funded`, { amount }, 1).send(res);
+                if (!wallet) throw new NotFoundError('Wallet not found.');
+                const walletBalance = Number(wallet.balance);
+
+                let data = await trx('wallet').where('id', id).increment({ balance: amount })
+                    .update('updatedAt', new Date());
+                if (!data) throw new InternalError();
+
+                await trx.commit();
+                let result = { balance: (walletBalance + amount).toFixed(2) }
+                return new SuccessResponse(`Wallet was successfully funded`, result, 1).send(res);
+            });
         } catch (error) {
             return next(error);
         }
@@ -88,7 +97,7 @@ class TransactionController {
 
                 await trx.commit();
                 let result = { balance: (walletBalance - amount).toFixed(2) }
-                return new SuccessResponse(`Wallet was successfully funded`, result, 1).send(res);
+                return new SuccessResponse('Transaction successful', result, 1).send(res);
             });
         } catch (error) {
             return next(error)
