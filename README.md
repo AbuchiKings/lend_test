@@ -40,6 +40,11 @@ Ensure you have docker installed. Provided environment variables as shown in sam
 
 The purpose of this document is to provide a low level summary of the Api Backend Design. This document will cover the following: 
 
+- Features
+- Data Flow and Design
+- Module Interactions
+- API Endpoints
+
 
 ### Features
 
