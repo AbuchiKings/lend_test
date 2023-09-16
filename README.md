@@ -114,21 +114,21 @@ CREATE TABLE `transaction` (
 
 ### Module Interactions
 
-Cache: Contains module that establishes connection to redis and exposes methods to interact with data in cache. This is primarily used to cache user sessions.
+**Cache:** Contains module that establishes connection to redis and exposes methods to interact with data in cache. This is primarily used to cache user sessions.
 
-Controllers: The userController and transactionController modules are responsible for handling requests from routes and returning response to the user. 
+**Controllers:** The userController and transactionController modules are responsible for handling requests from routes and returning response to the user. 
 
-Middlewares: This provides a request handler functions for authorization and user input validation. 
+**Middlewares:** This provides a request handler functions for authorization and user input validation. 
 
-Routes: Contains the index route and routes modules to access controller methods. Request handler functions including controller methods are called here. 
+**Routes:** Contains the index route and routes modules to access controller methods. Request handler functions including controller methods are called here. 
 
-Services: The services provide database access to controllers. This contains the queries which are used to manipulate data in the database.
+**Services:** The services provide database access to controllers. This contains the queries which are used to manipulate data in the database.
 
-Utils: Contains data type definitions, interfaces for objects and functions to handle responses to users.
+**Utils:** Contains data type definitions, interfaces for objects and functions to handle responses to users.
 
-App Module: Contains instantiation for express and middleware for cors, parsing json.
+**App Module:** Contains instantiation for express and middleware for cors, parsing json.
 
-Server Module: Application entry point. Set up a server to listen on port. 
+**Server Module:** Application entry point. Set up a server to listen on port. 
 
 
 ### API Endpoints
