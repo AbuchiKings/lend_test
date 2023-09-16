@@ -1,0 +1,14 @@
+version: "3.8"
+services:
+  api:
+    build:
+      context: .
+      args:
+        NODE_ENV: development
+    command: npm run dev
+
+  nginx:
+    volumes:
+      - ./files/nginx/dev.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "8001:80"

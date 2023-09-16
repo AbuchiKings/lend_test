@@ -1,0 +1,58 @@
+version: "3.8"
+services:
+  api:
+    build: .
+    volumes:
+      - ./:/home/node/app
+      - node_modules:/home/node/app/node_modules
+    env_file:
+      - ./.env
+    container_name: api
+    restart: unless-stopped
+    depends_on:
+      - redis
+      - database
+    networks:
+      - lend
+  
+  redis:
+    image: redis
+    container_name: redis
+    volumes:
+      - lend_redis_data:/data
+    restart: unless-stopped
+    networks:
+      - lend
+
+  nginx:
+    image: nginx
+    networks:
+      - lend
+    restart: unless-stopped
+    depends_on:
+      - api
+
+  database:
+    image: mysql:8.0
+    container_name: database
+    volumes:
+      - lend_mysql_db_data:/var/lib/mysql/
+    env_file:
+      - ./.env
+    environment:
+      MYSQL_PASSWORD: ${DB_PASS}
+      MYSQL_ROOT_PASSWORD: ${DB_PASS}
+      MYSQL_USER: abuchikings
+      MYSQL_DATABASE: ${DB_NAME}
+    ports:
+      - 3306:3306
+    networks:
+      - lend
+
+
+networks:
+  lend:
+volumes:
+  node_modules:
+  lend_mysql_db_data:
+  lend_redis_data:
