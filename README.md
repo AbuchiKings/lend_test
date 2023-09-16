@@ -105,11 +105,11 @@ CREATE TABLE `transaction` (
 ```
 
 
-A one-to-one relationship exists between the user and wallet table. This indicates that each user must have a wallet. 
-The userId column on the wallet table was indexed because most calls to the table would involve retrieving a wallet belonging to a specific user.
-A one-to-many relationship exists between the user table and the transaction table as a user would have multiple transaction records and indexing the userId field on the transaction table helps improve performance at read
-For storing user balance decimals are used as opposed to floating point or doubles which can have some accuracy problems.
-The from and to columns on the transaction table also references the user table, this way users or admin can always have a detailed transaction history.
+- A one-to-one relationship exists between the user and wallet table. This indicates that each user must have a wallet. 
+- The userId column on the wallet table was indexed because most calls to the table would involve retrieving a wallet belonging to a specific user.
+- A one-to-many relationship exists between the user table and the transaction table as a user would have multiple transaction records and indexing the userId field on the transaction table helps improve performance at read
+- For storing user balance decimals are used as opposed to floating point or doubles which can have some accuracy problems.
+- The from and to columns on the transaction table also references the user table, this way users or admin can always have a detailed transaction history.
 
 
 ### Module Interactions
