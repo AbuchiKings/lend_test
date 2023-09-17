@@ -1,4 +1,5 @@
 #### **BASE URL** - [https://abuchi-ndinigwe-lendsqr-be-test.koneqtor.com/api/v1](https://abuchi-ndinigwe-lendsqr-be-test.koneqtor.com/api/v1) 
+#### - [Project description](https://drive.google.com/file/d/1k3hhh9-R_BC8VhfpSdvIsRsnv_g-g_yX/view?usp=drive_link) 
 
 * [Technologies Used](#technologies-used)
 * [Getting Started](#getting-started)
