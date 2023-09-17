@@ -23,7 +23,6 @@ class TransactionController {
                     .update('updatedAt', new Date());
                 if (!data) throw new InternalError();
 
-                await trx.commit();
                 let result = { balance: (walletBalance + amount).toFixed(2) }
                 return new SuccessResponse(`Wallet was successfully funded`, result, 1).send(res);
             });
@@ -94,8 +93,6 @@ class TransactionController {
                 if (!data) throw new InternalError();
 
                 //queue transfer to bank
-
-                await trx.commit();
                 let result = { balance: (walletBalance - amount).toFixed(2) }
                 return new SuccessResponse('Transaction successful', result, 1).send(res);
             });

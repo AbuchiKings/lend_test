@@ -13,6 +13,9 @@ up:
 	$(COMPOSE) up
 
 up-d:
+	$(COMPOSE) up -d --build
+
+up-f:
 	$(COMPOSE) up --build
 
 down:
