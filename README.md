@@ -1,3 +1,5 @@
+### A simple user wallet. Users can fund, withdraw or transfer money.
+
 #### **BASE URL** - [https://lend.abuchikings.dev](https://lend.abuchikings.dev) 
 #### **POSTMAN DOCS** - [https://documenter.getpostman.com/view/6026635/2s9YC7SrVG](https://documenter.getpostman.com/view/6026635/2s9YC7SrVG) 
 #### **Link to project description on Google drive** - [Project description](https://drive.google.com/file/d/1k3hhh9-R_BC8VhfpSdvIsRsnv_g-g_yX/view?usp=drive_link) 
